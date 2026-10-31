@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram_clone/core/models/profile.dart';
+import 'package:instagram_clone/core/widgets/common/theme_bottom_sheet.dart';
 
 import '../../core/data/mock_data.dart';
 import '../../core/widgets/profile/profile_grid.dart';
@@ -99,7 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen>
                   ),
                   IconButton(
                     tooltip: 'Menu',
-                    onPressed: () {},
+                    onPressed: () => showThemeBottomSheet(context),
                     icon: const Icon(Icons.menu, size: 28),
                   ),
                 ] else ...[
