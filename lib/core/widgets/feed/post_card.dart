@@ -1,8 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:go_router/go_router.dart';
+import 'package:instagram_clone/core/models/media.dart';
+import 'package:instagram_clone/core/models/post.dart';
+import 'package:instagram_clone/core/models/user.dart';
 
-import '../../../features/feed/data/fake_feed.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/formatters.dart';
 import '../common/avatar.dart';
@@ -10,7 +13,7 @@ import '../common/avatar.dart';
 class PostCard extends StatefulWidget {
   const PostCard({super.key, required this.post});
 
-  final FakePost post;
+  final Post post;
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -77,7 +80,7 @@ class _PostCardState extends State<PostCard> {
 class _Header extends StatelessWidget {
   const _Header({required this.author});
 
-  final FakeUser author;
+  final User author;
 
   @override
   Widget build(BuildContext context) {
@@ -85,12 +88,24 @@ class _Header extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 8, 4, 8),
       child: Row(
         children: [
-          StoryRing(size: 38, child: Avatar(url: author.avatarUrl, size: 64)),
+          GestureDetector(
+            onTap: () => context.push('/u/${author.username}'),
+            child: StoryRing(
+              size: 38,
+              child: Avatar(url: author.avatarUrl, size: 64),
+            ),
+          ),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(
-              author.username,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+            child: GestureDetector(
+              onTap: () => context.push('/u/${author.username}'),
+              child: Text(
+                author.username,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
           IconButton(
@@ -111,7 +126,7 @@ class _Media extends StatelessWidget {
     required this.onPageChanged,
   });
 
-  final List<FakeMedia> media;
+  final List<Media> media;
   final int page;
   final ValueChanged<int> onPageChanged;
 
@@ -343,7 +358,7 @@ class _Dots extends StatelessWidget {
 class _LikedBy extends StatelessWidget {
   const _LikedBy({required this.users, required this.total});
 
-  final List<FakeUser> users;
+  final List<User> users;
   final int total;
 
   @override

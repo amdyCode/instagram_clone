@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:instagram_clone/core/models/story.dart';
 
-import '../../../features/feed/data/fake_feed.dart';
+import '../../data/mock_data.dart';
 import '../common/avatar.dart';
 
 class StoryTray extends StatelessWidget {
   const StoryTray({super.key, required this.stories});
 
-  final List<FakeStory> stories;
+  final List<Story> stories;
 
   static const _ringSize = 84.0;
 
@@ -29,7 +30,7 @@ class StoryTray extends StatelessWidget {
 class _StoryItem extends StatelessWidget {
   const _StoryItem({required this.story});
 
-  final FakeStory story;
+  final Story story;
 
   @override
   Widget build(BuildContext context) {

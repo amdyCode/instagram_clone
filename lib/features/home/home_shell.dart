@@ -3,7 +3,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/widgets/common/avatar.dart';
-import '../feed/data/fake_feed.dart';
+import '../../core/data/mock_data.dart';
 
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key, required this.shell});
@@ -23,13 +23,6 @@ class HomeShell extends StatelessWidget {
       (
         'Accueil',
         Icon(i == 0 ? Icons.home_filled : Icons.home_outlined, size: 30),
-      ),
-      (
-        'Reels',
-        Icon(
-          i == 1 ? Icons.smart_display : Icons.smart_display_outlined,
-          size: 28,
-        ),
       ),
       (
         'Messages',

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/data/mock_data.dart';
 import '../../core/widgets/common/instagram_logo.dart';
 import '../../core/widgets/feed/post_card.dart';
 import '../../core/widgets/feed/story_tray.dart';
-import 'data/fake_feed.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -37,13 +37,13 @@ class FeedScreen extends StatelessWidget {
                   const SizedBox(width: 4),
                 ],
               ),
-              SliverToBoxAdapter(child: StoryTray(stories: fakeStories)),
+              SliverToBoxAdapter(child: StoryTray(stories: mockStories)),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
               SliverList.builder(
-                itemCount: fakePosts.length,
+                itemCount: mockPosts.length,
                 itemBuilder: (_, i) => PostCard(
-                  key: ValueKey(fakePosts[i].id),
-                  post: fakePosts[i],
+                  key: ValueKey(mockPosts[i].id),
+                  post: mockPosts[i],
                 ),
               ),
             ],
