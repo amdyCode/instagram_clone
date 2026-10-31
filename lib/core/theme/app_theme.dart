@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import 'app_colors.dart';
 
 // Thèmes clair / sombre.
@@ -93,7 +92,6 @@ abstract final class AppTheme {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: text,
-          // Dérivé de la typo de base pour garder la police par défaut.
           textStyle: ThemeData(brightness: brightness).textTheme.labelLarge
               ?.copyWith(
                 fontSize: 15,
