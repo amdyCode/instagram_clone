@@ -166,7 +166,10 @@ class _ProfileScreenState extends State<ProfileScreen>
               pinned: true,
               delegate: ProfileTabBarDelegate(tabController: _tabController),
             ),
-            ProfilePostGrid(posts: _profile.posts, onPostTap: (post) {}),
+            ProfilePostGrid(
+              posts: _profile.posts,
+              onPostTap: (post) => context.push('/post/${post.id}'),
+            ),
           ],
         ),
       ),
