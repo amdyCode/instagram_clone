@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/widgets/common/avatar.dart';
 import '../../core/data/mock_data.dart';
+import '../../core/widgets/common/avatar.dart';
 
 class HomeShell extends StatelessWidget {
   const HomeShell({super.key, required this.shell});
@@ -27,14 +27,14 @@ class HomeShell extends StatelessWidget {
       (
         'Messages',
         FaIcon(
-          i == 2
+          i == 1
               ? FontAwesomeIcons.solidPaperPlane
               : FontAwesomeIcons.paperPlane,
           size: 23,
           color: color,
         ),
       ),
-      ('Recherche', Icon(Icons.search, size: 30, weight: i == 3 ? 700 : 400)),
+      ('Recherche', Icon(Icons.search, size: 30, weight: i == 2 ? 700 : 400)),
       (
         'Profil',
         Container(
@@ -42,7 +42,7 @@ class HomeShell extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: i == 4 ? color : Colors.transparent,
+              color: i == 3 ? color : Colors.transparent,
               width: 1.5,
             ),
           ),

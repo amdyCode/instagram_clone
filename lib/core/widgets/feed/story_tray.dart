@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:instagram_clone/core/models/story.dart';
 
 import '../../data/mock_data.dart';
@@ -20,17 +21,22 @@ class StoryTray extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10),
         itemCount: stories.length + 1,
         separatorBuilder: (_, _) => const SizedBox(width: 6),
-        itemBuilder: (context, i) =>
-            i == 0 ? const _YourStory() : _StoryItem(story: stories[i - 1]),
+        itemBuilder: (context, i) => i == 0
+            ? const _YourStory()
+            : _StoryItem(
+                story: stories[i - 1],
+                onTap: () => context.push('/story/${i - 1}'),
+              ),
       ),
     );
   }
 }
 
 class _StoryItem extends StatelessWidget {
-  const _StoryItem({required this.story});
+  const _StoryItem({required this.story, required this.onTap});
 
   final Story story;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -40,13 +46,16 @@ class _StoryItem extends StatelessWidget {
         ? StoryRingState.closeFriends
         : StoryRingState.unseen;
 
-    return _Labeled(
-      label: story.user.username,
-      dimmed: story.seen,
-      child: StoryRing(
-        size: StoryTray._ringSize,
-        state: state,
-        child: Avatar(url: story.user.avatarUrl, size: 100),
+    return GestureDetector(
+      onTap: onTap,
+      child: _Labeled(
+        label: story.user.username,
+        dimmed: story.seen,
+        child: StoryRing(
+          size: StoryTray._ringSize,
+          state: state,
+          child: Avatar(url: story.user.avatarUrl, size: 100),
+        ),
       ),
     );
   }

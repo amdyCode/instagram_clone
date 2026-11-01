@@ -8,6 +8,7 @@ import '../../features/auth/splash_screen.dart';
 import '../../features/feed/feed_screen.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/story/story_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final router = buildRouter();
@@ -25,6 +26,13 @@ GoRouter buildRouter({String initialLocation = '/splash'}) => GoRouter(
       path: '/u/:username',
       builder: (_, state) =>
           ProfileScreen(username: state.pathParameters['username']),
+    ),
+    GoRoute(
+      path: '/story/:index',
+      builder: (_, state) {
+        final idx = int.tryParse(state.pathParameters['index'] ?? '0') ?? 0;
+        return StoryScreen(initialIndex: idx);
+      },
     ),
     StatefulShellRoute.indexedStack(
       builder: (_, _, shell) => HomeShell(shell: shell),

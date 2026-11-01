@@ -29,11 +29,81 @@ const mockUsers = [
 ];
 
 final mockStories = [
-  Story(user: mockUsers[0], closeFriends: true),
-  Story(user: mockUsers[1]),
-  Story(user: mockUsers[2]),
-  Story(user: mockUsers[6]),
-  Story(user: mockUsers[5], seen: true),
+  Story(
+    user: mockUsers[0],
+    closeFriends: true,
+    items: [
+      StoryItem(
+        id: 's0_1',
+        mediaUrl: 'https://picsum.photos/seed/elephant_story1/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+        caption: 'Session de skate au coucher du soleil 🛹',
+      ),
+      StoryItem(
+        id: 's0_2',
+        mediaUrl: 'https://picsum.photos/seed/elephant_story2/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
+    ],
+  ),
+  Story(
+    user: mockUsers[1],
+    items: [
+      StoryItem(
+        id: 's1_1',
+        mediaUrl: 'https://picsum.photos/seed/paisley_story1/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 5)),
+        caption: 'En balade à la campagne 🌾',
+      ),
+      StoryItem(
+        id: 's1_2',
+        mediaUrl: 'https://picsum.photos/seed/paisley_story2/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 4)),
+      ),
+      StoryItem(
+        id: 's1_3',
+        mediaUrl: 'https://picsum.photos/seed/paisley_story3/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
+    ],
+  ),
+  Story(
+    user: mockUsers[2],
+    items: [
+      StoryItem(
+        id: 's2_1',
+        mediaUrl: 'https://picsum.photos/seed/cake_story1/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 8)),
+        caption: 'Nouveau gâteau en préparation 🍰',
+      ),
+    ],
+  ),
+  Story(
+    user: mockUsers[6],
+    items: [
+      StoryItem(
+        id: 's6_1',
+        mediaUrl: 'https://picsum.photos/seed/kenzo_story1/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 11)),
+      ),
+      StoryItem(
+        id: 's6_2',
+        mediaUrl: 'https://picsum.photos/seed/kenzo_story2/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 9)),
+      ),
+    ],
+  ),
+  Story(
+    user: mockUsers[5],
+    seen: true,
+    items: [
+      StoryItem(
+        id: 's5_1',
+        mediaUrl: 'https://picsum.photos/seed/jiho_story1/1080/1920',
+        createdAt: DateTime.now().subtract(const Duration(hours: 14)),
+      ),
+    ],
+  ),
 ];
 
 final mockPosts = [
