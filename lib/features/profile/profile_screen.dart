@@ -8,6 +8,7 @@ import '../../core/widgets/profile/profile_grid.dart';
 import '../../core/widgets/profile/profile_header.dart';
 import '../../core/widgets/profile/profile_tab_bar.dart';
 import '../../core/widgets/profile/story_highlights.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key, this.username, this.isMe = false});
@@ -54,6 +55,23 @@ class _ProfileScreenState extends State<ProfileScreen>
     });
   }
 
+  Future<void> _editProfile() async {
+    final updated = await Navigator.of(context).push<Profile>(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder: (_) => EditProfileScreen(profile: _profile),
+      ),
+    );
+    if (updated != null && mounted) {
+      setState(() {
+        _profile = updated;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Profil mis à jour !')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isMe = widget.isMe || _profile.isMe;
@@ -94,13 +112,18 @@ class _ProfileScreenState extends State<ProfileScreen>
               actions: [
                 if (isMe) ...[
                   IconButton(
+                    tooltip: 'Changer le thème',
+                    onPressed: () => showThemeBottomSheet(context),
+                    icon: const Icon(Icons.palette_outlined, size: 24),
+                  ),
+                  IconButton(
                     tooltip: 'Créer',
                     onPressed: () {},
                     icon: const Icon(Icons.add_box_outlined, size: 26),
                   ),
                   IconButton(
                     tooltip: 'Menu',
-                    onPressed: () => showThemeBottomSheet(context),
+                    onPressed: () {},
                     icon: const Icon(Icons.menu, size: 28),
                   ),
                 ] else ...[
@@ -121,17 +144,15 @@ class _ProfileScreenState extends State<ProfileScreen>
                 const SizedBox(width: 4),
               ],
             ),
-
             SliverToBoxAdapter(
               child: ProfileHeader(
                 profile: _profile,
                 onFollowToggle: _toggleFollow,
                 onMessageTap: () {},
-                onEditProfileTap: () {},
+                onEditProfileTap: _editProfile,
                 onShareProfileTap: () {},
               ),
             ),
-
             SliverToBoxAdapter(
               child: StoryHighlights(
                 highlights: _profile.highlights,
@@ -141,12 +162,10 @@ class _ProfileScreenState extends State<ProfileScreen>
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 10)),
-
             SliverPersistentHeader(
               pinned: true,
               delegate: ProfileTabBarDelegate(tabController: _tabController),
             ),
-
             ProfilePostGrid(posts: _profile.posts, onPostTap: (post) {}),
           ],
         ),

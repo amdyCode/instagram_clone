@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/data/mock_data.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
 import '../../features/auth/splash_screen.dart';
 import '../../features/feed/feed_screen.dart';
 import '../../features/home/home_shell.dart';
+import '../../features/profile/edit_profile_screen.dart';
 import '../../features/profile/profile_screen.dart';
 import '../../features/story/story_screen.dart';
 
@@ -26,6 +28,15 @@ GoRouter buildRouter({String initialLocation = '/splash'}) => GoRouter(
       path: '/u/:username',
       builder: (_, state) =>
           ProfileScreen(username: state.pathParameters['username']),
+    ),
+    GoRoute(
+      path: '/user/:username',
+      builder: (_, state) =>
+          ProfileScreen(username: state.pathParameters['username']),
+    ),
+    GoRoute(
+      path: '/edit-profile',
+      builder: (_, _) => EditProfileScreen(profile: sampleMyProfile),
     ),
     GoRoute(
       path: '/story/:index',

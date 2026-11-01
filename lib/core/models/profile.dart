@@ -33,13 +33,21 @@ class Profile {
   final List<Highlight> highlights;
   final List<ProfilePost> posts;
 
-  Profile copyWith({bool? isFollowing, int? followerCount}) {
+  Profile copyWith({
+    String? username,
+    String? fullName,
+    String? avatarUrl,
+    String? bio,
+    String? link,
+    bool? isFollowing,
+    int? followerCount,
+  }) {
     return Profile(
-      username: username,
-      fullName: fullName,
-      avatarUrl: avatarUrl,
-      bio: bio,
-      link: link,
+      username: username ?? this.username,
+      fullName: fullName ?? this.fullName,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      bio: bio ?? this.bio,
+      link: link ?? this.link,
       postCount: postCount,
       followerCount: followerCount ?? this.followerCount,
       followingCount: followingCount,
