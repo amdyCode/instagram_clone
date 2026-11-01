@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+﻿import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +8,7 @@ import 'package:instagram_clone/core/models/user.dart';
 
 import '../../theme/app_colors.dart';
 import '../../utils/formatters.dart';
+import '../comments/comments_bottom_sheet.dart';
 import '../common/avatar.dart';
 
 class PostCard extends StatefulWidget {
@@ -27,6 +28,16 @@ class _PostCardState extends State<PostCard> {
   int get _likeCount =>
       widget.post.likeCount +
       (_liked == widget.post.likedByMe ? 0 : (_liked ? 1 : -1));
+
+  void _openComments() {
+    showCommentsBottomSheet(
+      context,
+      postId: widget.post.id,
+      postAuthor: widget.post.author,
+      caption: widget.post.caption,
+      postCreatedAt: widget.post.createdAt,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,6 +62,7 @@ class _PostCardState extends State<PostCard> {
           page: _page,
           onLike: () => setState(() => _liked = !_liked),
           onSave: () => setState(() => _saved = !_saved),
+          onComment: _openComments,
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -63,8 +75,11 @@ class _PostCardState extends State<PostCard> {
               _Caption(username: post.author.username, caption: post.caption),
               const SizedBox(height: 6),
               if (post.commentCount > 0)
-                _Muted(
-                  'Voir les ${formatCount(post.commentCount)} commentaires',
+                GestureDetector(
+                  onTap: _openComments,
+                  child: _Muted(
+                    'Voir les ${formatCount(post.commentCount)} commentaires',
+                  ),
                 ),
               const SizedBox(height: 4),
               _Muted(timeAgo(post.createdAt), fontSize: 12),
@@ -193,6 +208,7 @@ class _Actions extends StatelessWidget {
     required this.page,
     required this.onLike,
     required this.onSave,
+    required this.onComment,
   });
 
   final bool liked;
@@ -205,6 +221,7 @@ class _Actions extends StatelessWidget {
   final int page;
   final VoidCallback onLike;
   final VoidCallback onSave;
+  final VoidCallback onComment;
 
   @override
   Widget build(BuildContext context) {
@@ -235,7 +252,7 @@ class _Actions extends StatelessWidget {
               _ActionButton(
                 tooltip: 'Commenter',
                 count: commentCount,
-                onTap: () {},
+                onTap: onComment,
                 icon: FaIcon(
                   FontAwesomeIcons.comment,
                   size: 22,
