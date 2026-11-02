@@ -11,6 +11,7 @@ import '../../features/home/home_shell.dart';
 import '../../features/post/post_detail_screen.dart';
 import '../../features/profile/edit_profile_screen.dart';
 import '../../features/profile/profile_screen.dart';
+import '../../features/search/search_screen.dart';
 import '../../features/story/story_screen.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -63,7 +64,11 @@ GoRouter buildRouter({String initialLocation = '/splash'}) => GoRouter(
           routes: [GoRoute(path: '/', builder: (_, _) => const FeedScreen())],
         ),
         _placeholderBranch('/messages', 'Messages', Icons.send_outlined),
-        _placeholderBranch('/search', 'Recherche', Icons.search),
+        StatefulShellBranch(
+          routes: [
+            GoRoute(path: '/search', builder: (_, _) => const SearchScreen()),
+          ],
+        ),
         StatefulShellBranch(
           routes: [
             GoRoute(path: '/me', builder: (_, _) => const ProfileScreen.me()),

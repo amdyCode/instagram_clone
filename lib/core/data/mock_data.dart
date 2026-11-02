@@ -8,25 +8,50 @@ import 'package:instagram_clone/core/models/comment.dart';
 Media _photo(String seed, {int h = 1350}) =>
     Media(url: 'https://picsum.photos/seed/$seed/1080/$h', height: h);
 
-const me = User(username: 'moi', avatarUrl: 'https://i.pravatar.cc/150?img=68');
+const me = User(
+  username: 'moi',
+  fullName: 'Mon Profil',
+  avatarUrl: 'https://i.pravatar.cc/150?img=68',
+);
 
 const mockUsers = [
   User(
     username: 'jaded.elephant17',
+    fullName: 'Léa Dupont',
     avatarUrl: 'https://i.pravatar.cc/150?img=3',
   ),
   User(
     username: 'paisley.print48',
+    fullName: 'Camille Laurent',
     avatarUrl: 'https://i.pravatar.cc/150?img=5',
+    isVerified: true,
   ),
-  User(username: 'cake_baker', avatarUrl: 'https://i.pravatar.cc/150?img=9'),
-  User(username: 'lil_wyatt838', avatarUrl: 'https://i.pravatar.cc/150?img=12'),
+  User(
+    username: 'cake_baker',
+    fullName: 'Atelier Pâtisserie',
+    avatarUrl: 'https://i.pravatar.cc/150?img=9',
+  ),
+  User(
+    username: 'lil_wyatt838',
+    fullName: 'Wyatt Walker',
+    avatarUrl: 'https://i.pravatar.cc/150?img=12',
+  ),
   User(
     username: 'alex.anyways18',
+    fullName: 'Alexandre Martin',
     avatarUrl: 'https://i.pravatar.cc/150?img=15',
+    isVerified: true,
   ),
-  User(username: 'jiho100x', avatarUrl: 'https://i.pravatar.cc/150?img=20'),
-  User(username: 'kenzoere', avatarUrl: 'https://i.pravatar.cc/150?img=33'),
+  User(
+    username: 'jiho100x',
+    fullName: 'Jiho Kim',
+    avatarUrl: 'https://i.pravatar.cc/150?img=20',
+  ),
+  User(
+    username: 'kenzoere',
+    fullName: 'Kenzo Robert',
+    avatarUrl: 'https://i.pravatar.cc/150?img=33',
+  ),
 ];
 
 final mockStories = [
@@ -165,17 +190,17 @@ final sampleOtherProfile = Profile(
   highlights: const [
     Highlight(
       id: 'h1',
-      title: 'Skate 🛹',
+      title: 'Skate',
       coverUrl: 'https://picsum.photos/seed/skate1/300/300',
     ),
     Highlight(
       id: 'h2',
-      title: 'Voyages ✈️',
+      title: 'Voyages',
       coverUrl: 'https://picsum.photos/seed/travel/300/300',
     ),
     Highlight(
       id: 'h3',
-      title: 'Paris 🇫🇷',
+      title: 'Paris',
       coverUrl: 'https://picsum.photos/seed/paris/300/300',
     ),
     Highlight(
@@ -205,7 +230,7 @@ final sampleMyProfile = Profile(
   fullName: 'Mon Profil',
   avatarUrl: me.avatarUrl,
   bio:
-      'DÃ©veloppeur Flutter & explorateur de code \nEn train de cloner Instagram.',
+      'Développeur Flutter & explorateur de code \nEn train de cloner Instagram.',
   link: 'github.com/mon-profil',
   postCount: 12,
   followerCount: 840,
@@ -261,6 +286,16 @@ final mockComments = <String, List<Comment>>{
   ],
 };
 
+final mockExplorePosts = List.generate(
+  24,
+  (i) => ProfilePost(
+    id: 'explore_$i',
+    thumbnailUrl: 'https://picsum.photos/seed/explore_$i/500/500',
+    isMultiple: i % 5 == 0,
+    isVideo: i % 4 == 1,
+  ),
+);
+
 Post getPostById(String id) {
   for (final p in mockPosts) {
     if (p.id == id) return p;
@@ -273,7 +308,7 @@ Post getPostById(String id) {
       author: me,
       media: [
         Media(
-          url: 'https://picsum.photos/seed/mygrid_/1080/1080',
+          url: 'https://picsum.photos/seed/mygrid_$idx/1080/1080',
           height: 1080,
           width: 1080,
         ),
@@ -295,12 +330,12 @@ Post getPostById(String id) {
       author: mockUsers[4],
       media: [
         Media(
-          url: 'https://picsum.photos/seed/grid_/1080/1080',
+          url: 'https://picsum.photos/seed/grid_$idx/1080/1080',
           height: 1080,
           width: 1080,
         ),
       ],
-      caption: 'Capture urbaine # dans les rues de Paris',
+      caption: 'Capture urbaine #$idx dans les rues de Paris',
       likeCount: 180 + idx * 15,
       commentCount: 12 + idx,
       repostCount: 3 + idx,
@@ -310,5 +345,41 @@ Post getPostById(String id) {
     );
   }
 
+  if (id.startsWith('explore_')) {
+    final idx = int.tryParse(id.replaceAll('explore_', '')) ?? 0;
+    final author = mockUsers[idx % mockUsers.length];
+    return Post(
+      id: id,
+      author: author,
+      media: [
+        Media(
+          url: 'https://picsum.photos/seed/explore_$idx/1080/1080',
+          height: 1080,
+          width: 1080,
+        ),
+      ],
+      caption: 'Inspiration & découverte #explore #photo$idx #vibes',
+      likeCount: 240 + idx * 21,
+      commentCount: 18 + idx * 2,
+      repostCount: 4 + idx,
+      shareCount: 11 + idx,
+      likedBy: [
+        mockUsers[(idx + 1) % mockUsers.length],
+        mockUsers[(idx + 2) % mockUsers.length],
+      ],
+      createdAt: DateTime.now().subtract(Duration(hours: idx * 3 + 1)),
+    );
+  }
+
   return mockPosts.first;
+}
+
+List<User> searchUsers(String query) {
+  final q = query.trim().toLowerCase();
+  if (q.isEmpty) return const [];
+  return mockUsers.where((u) {
+    final matchesUsername = u.username.toLowerCase().contains(q);
+    final matchesFullName = (u.fullName?.toLowerCase().contains(q)) ?? false;
+    return matchesUsername || matchesFullName;
+  }).toList();
 }
