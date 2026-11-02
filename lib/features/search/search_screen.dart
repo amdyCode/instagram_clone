@@ -29,11 +29,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _explorePosts = List.of(mockExplorePosts);
-    _recentSearches = [
-      mockUsers[4],
-      mockUsers[1],
-      mockUsers[0],
-    ];
+    _recentSearches = [mockUsers[4], mockUsers[1], mockUsers[0]];
 
     _searchController.addListener(_onSearchChanged);
     _focusNode.addListener(() {

@@ -112,13 +112,13 @@ class _ProfileScreenState extends State<ProfileScreen>
               actions: [
                 if (isMe) ...[
                   IconButton(
-                    tooltip: 'Changer le thème',
+                    tooltip: 'Changer le theme',
                     onPressed: () => showThemeBottomSheet(context),
                     icon: const Icon(Icons.palette_outlined, size: 24),
                   ),
                   IconButton(
-                    tooltip: 'Créer',
-                    onPressed: () {},
+                    tooltip: 'Creer',
+                    onPressed: () => context.push('/create-post'),
                     icon: const Icon(Icons.add_box_outlined, size: 26),
                   ),
                   IconButton(

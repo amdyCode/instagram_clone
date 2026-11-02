@@ -8,6 +8,7 @@ import '../../features/auth/register_screen.dart';
 import '../../features/auth/splash_screen.dart';
 import '../../features/feed/feed_screen.dart';
 import '../../features/home/home_shell.dart';
+import '../../features/post/create_post_screen.dart';
 import '../../features/post/post_detail_screen.dart';
 import '../../features/profile/edit_profile_screen.dart';
 import '../../features/profile/profile_screen.dart';
@@ -40,6 +41,7 @@ GoRouter buildRouter({String initialLocation = '/splash'}) => GoRouter(
       path: '/edit-profile',
       builder: (_, _) => EditProfileScreen(profile: sampleMyProfile),
     ),
+    GoRoute(path: '/create-post', builder: (_, _) => const CreatePostScreen()),
     GoRoute(
       path: '/post/:id',
       builder: (_, state) =>

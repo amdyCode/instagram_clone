@@ -260,12 +260,6 @@ class _Actions extends StatelessWidget {
                 ),
               ),
               _ActionButton(
-                tooltip: 'Republier',
-                count: repostCount,
-                onTap: () {},
-                icon: Icon(Icons.repeat_rounded, size: 26, color: onSurface),
-              ),
-              _ActionButton(
                 tooltip: 'Partager',
                 count: shareCount,
                 onTap: () {},
@@ -319,16 +313,17 @@ class _ActionButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              SizedBox.square(dimension: 28, child: Center(child: icon)),
+              SizedBox.square(dimension: 26, child: Center(child: icon)),
               if (count > 0) ...[
-                const SizedBox(width: 5),
+                const SizedBox(width: 4),
                 Text(
                   formatCount(count),
                   style: const TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

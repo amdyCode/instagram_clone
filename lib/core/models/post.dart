@@ -11,7 +11,7 @@ class Post {
     required this.commentCount,
     required this.repostCount,
     required this.shareCount,
-    required this.likedBy,
+    this.likedBy = const [],
     required this.createdAt,
     this.likedByMe = false,
     this.savedByMe = false,

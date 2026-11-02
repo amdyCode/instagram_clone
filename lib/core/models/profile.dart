@@ -41,6 +41,8 @@ class Profile {
     String? link,
     bool? isFollowing,
     int? followerCount,
+    int? postCount,
+    List<ProfilePost>? posts,
   }) {
     return Profile(
       username: username ?? this.username,
@@ -48,14 +50,14 @@ class Profile {
       avatarUrl: avatarUrl ?? this.avatarUrl,
       bio: bio ?? this.bio,
       link: link ?? this.link,
-      postCount: postCount,
+      postCount: postCount ?? this.postCount,
       followerCount: followerCount ?? this.followerCount,
       followingCount: followingCount,
       isMe: isMe,
       isFollowing: isFollowing ?? this.isFollowing,
       mutualFollowers: mutualFollowers,
       highlights: highlights,
-      posts: posts,
+      posts: posts ?? this.posts,
     );
   }
 }

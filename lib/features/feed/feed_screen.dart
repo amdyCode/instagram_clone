@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../core/data/feed_provider.dart';
 import '../../core/data/mock_data.dart';
 import '../../core/widgets/common/instagram_logo.dart';
 import '../../core/widgets/feed/post_card.dart';
 import '../../core/widgets/feed/story_tray.dart';
 
-class FeedScreen extends StatelessWidget {
+class FeedScreen extends ConsumerWidget {
   const FeedScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final posts = ref.watch(feedPostsProvider);
+
     return Scaffold(
       body: SafeArea(
         bottom: false,
@@ -23,8 +28,8 @@ class FeedScreen extends StatelessWidget {
                 centerTitle: true,
                 toolbarHeight: 52,
                 leading: IconButton(
-                  tooltip: 'Créer',
-                  onPressed: () {},
+                  tooltip: 'Creer',
+                  onPressed: () => context.push('/create-post'),
                   icon: const Icon(Icons.add, size: 32),
                 ),
                 title: const InstagramWordmark(),
@@ -40,11 +45,9 @@ class FeedScreen extends StatelessWidget {
               SliverToBoxAdapter(child: StoryTray(stories: mockStories)),
               const SliverToBoxAdapter(child: SizedBox(height: 4)),
               SliverList.builder(
-                itemCount: mockPosts.length,
-                itemBuilder: (_, i) => PostCard(
-                  key: ValueKey(mockPosts[i].id),
-                  post: mockPosts[i],
-                ),
+                itemCount: posts.length,
+                itemBuilder: (_, i) =>
+                    PostCard(key: ValueKey(posts[i].id), post: posts[i]),
               ),
             ],
           ),
