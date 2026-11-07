@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'auth_controller.dart';
 import '../../core/widgets/auth/ig_text_field.dart';
 import '../../core/widgets/auth/pill_button.dart';
 import '../../core/widgets/common/instagram_logo.dart';
 import '../../core/widgets/common/meta_logo.dart';
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _identifier = TextEditingController();
   final _password = TextEditingController();
-  bool _loading = false;
 
   late final _canSubmit = Listenable.merge([_identifier, _password]);
   bool get _isValid =>
@@ -30,18 +31,33 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _submit() async {
-    if (!_isValid || _loading) return;
+    if (!_isValid) return;
     FocusScope.of(context).unfocus();
-    setState(() => _loading = true);
-    await Future<void>.delayed(const Duration(milliseconds: 800));
+
+    final success = await ref
+        .read(authControllerProvider.notifier)
+        .login(
+          emailOrUsername: _identifier.text.trim(),
+          password: _password.text,
+        );
+
     if (!mounted) return;
-    setState(() => _loading = false);
-    context.go('/');
+
+    if (success) {
+      context.go('/');
+    } else {
+      final error =
+          ref.read(authControllerProvider).error ?? 'Erreur de connexion';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), behavior: SnackBarBehavior.floating),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final secondary = Theme.of(context).colorScheme.onSurfaceVariant;
+    final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -69,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: secondary,
                           ),
                           label: Text(
-                            'Français (France)',
+                            'Francais (France)',
                             style: TextStyle(
                               color: secondary,
                               fontWeight: FontWeight.w400,
@@ -104,7 +120,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         listenable: _canSubmit,
                         builder: (_, _) => PillButton(
                           label: 'Se connecter',
-                          loading: _loading,
+                          loading: authState.isLoading,
                           onPressed: _isValid ? _submit : null,
                         ),
                       ),
@@ -112,13 +128,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       Center(
                         child: TextButton(
                           onPressed: () {},
-                          child: const Text('Mot de passe oublié ?'),
+                          child: const Text('Mot de passe oublie ?'),
                         ),
                       ),
                       const Spacer(),
                       const SizedBox(height: 32),
                       PillButton.outlined(
-                        label: 'Créer un compte',
+                        label: 'Creer un compte',
                         onPressed: () => context.push('/auth/register'),
                       ),
                       const SizedBox(height: 16),
