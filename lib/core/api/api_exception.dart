@@ -11,22 +11,21 @@ class ApiException implements Exception {
 }
 
 class NetworkException extends ApiException {
-  const NetworkException([
-    String message = 'Impossible de contacter le serveur',
-  ]) : super(message, code: 'NETWORK_ERROR');
+  const NetworkException([super.message = 'Impossible de contacter le serveur'])
+    : super(code: 'NETWORK_ERROR');
 }
 
 class AuthException extends ApiException {
-  const AuthException([String message = 'Session expiree ou acces refuse'])
-    : super(message, code: 'UNAUTHORIZED', statusCode: 401);
+  const AuthException([super.message = 'Session expiree ou acces refuse'])
+    : super(code: 'UNAUTHORIZED', statusCode: 401);
 }
 
 class GraphQLException extends ApiException {
   const GraphQLException(
-    String message, {
+    super.message, {
     this.errors = const [],
     super.code = 'GRAPHQL_ERROR',
-  }) : super(message);
+  });
 
   final List<String> errors;
 
