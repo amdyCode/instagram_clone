@@ -6,8 +6,11 @@ import 'package:instagram_clone/core/api/api_config.dart';
 import 'package:instagram_clone/core/api/api_exception.dart';
 import 'package:instagram_clone/core/api/auth_token_storage.dart';
 import 'package:instagram_clone/core/api/graphql_client.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('AuthTokenStorage', () {
     test('stocke et efface le token correctement', () async {
       final storage = AuthTokenStorage();
@@ -22,6 +25,26 @@ void main() {
       expect(storage.currentToken, isNull);
       expect(storage.hasToken, isFalse);
     });
+
+    test(
+      'persiste le token dans SharedPreferences entre plusieurs instances',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+
+        final storage1 = AuthTokenStorage(prefs: prefs);
+        await storage1.writeToken('token_persistant_123');
+
+        final storage2 = AuthTokenStorage(prefs: prefs);
+        expect(storage2.currentToken, 'token_persistant_123');
+        expect(await storage2.readToken(), 'token_persistant_123');
+
+        await storage2.deleteToken();
+        final storage3 = AuthTokenStorage(prefs: prefs);
+        expect(storage3.currentToken, isNull);
+        expect(storage3.hasToken, isFalse);
+      },
+    );
   });
 
   group('GraphQLClient', () {

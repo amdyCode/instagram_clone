@@ -3,10 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:instagram_clone/core/router/app_router.dart';
 import 'package:instagram_clone/core/theme/app_theme.dart';
 import 'package:instagram_clone/core/theme/theme_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'core/api/api_providers.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const ProviderScope(child: MainApp()));
+  final prefs = await SharedPreferences.getInstance();
+
+  runApp(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends ConsumerWidget {
