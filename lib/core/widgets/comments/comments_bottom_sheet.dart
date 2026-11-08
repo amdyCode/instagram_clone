@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../features/post/post_controller.dart';
 import '../../data/mock_data.dart';
 import '../../models/comment.dart';
 import '../../models/user.dart';
@@ -27,7 +29,7 @@ void showCommentsBottomSheet(
   );
 }
 
-class CommentsBottomSheet extends StatefulWidget {
+class CommentsBottomSheet extends ConsumerStatefulWidget {
   const CommentsBottomSheet({
     super.key,
     required this.postId,
@@ -42,37 +44,30 @@ class CommentsBottomSheet extends StatefulWidget {
   final DateTime? postCreatedAt;
 
   @override
-  State<CommentsBottomSheet> createState() => _CommentsBottomSheetState();
+  ConsumerState<CommentsBottomSheet> createState() =>
+      _CommentsBottomSheetState();
 }
 
-class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
+class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
   final _commentController = TextEditingController();
   final _scrollController = ScrollController();
-  late List<Comment> _comments;
 
-  @override
-  void initState() {
-    super.initState();
-    _comments = List<Comment>.from(
-      mockComments[widget.postId] ??
-          [
-            Comment(
-              id: 'c_default_1',
-              author: mockUsers[0],
-              text: 'Superbe photo ! J’adore les couleurs',
-              createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-              likeCount: 4,
-            ),
-            Comment(
-              id: 'c_default_2',
-              author: mockUsers[1],
-              text: 'Magnifique cadrage',
-              createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-              likeCount: 1,
-            ),
-          ],
-    );
-  }
+  static final List<Comment> _defaultComments = [
+    Comment(
+      id: 'c_default_1',
+      author: mockUsers[0],
+      text: 'Superbe photo ! J\'adore les couleurs',
+      createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      likeCount: 4,
+    ),
+    Comment(
+      id: 'c_default_2',
+      author: mockUsers[1],
+      text: 'Magnifique cadrage',
+      createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      likeCount: 1,
+    ),
+  ];
 
   @override
   void dispose() {
@@ -81,23 +76,16 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
     super.dispose();
   }
 
-  void _addComment() {
+  Future<void> _addComment() async {
     final text = _commentController.text.trim();
     if (text.isEmpty) return;
 
-    setState(() {
-      _comments.add(
-        Comment(
-          id: 'c_${DateTime.now().millisecondsSinceEpoch}',
-          author: me,
-          text: text,
-          createdAt: DateTime.now(),
-        ),
-      );
-      _commentController.clear();
-    });
-
+    _commentController.clear();
     FocusScope.of(context).unfocus();
+
+    await ref
+        .read(commentsControllerProvider(widget.postId).notifier)
+        .addComment(text);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -110,17 +98,6 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
     });
   }
 
-  void _toggleLike(int index) {
-    setState(() {
-      final c = _comments[index];
-      final liked = !c.likedByMe;
-      _comments[index] = c.copyWith(
-        likedByMe: liked,
-        likeCount: c.likeCount + (liked ? 1 : -1),
-      );
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -128,6 +105,11 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
     final onSurface = theme.colorScheme.onSurface;
     final secondary = theme.colorScheme.onSurfaceVariant;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
+    final commentsState = ref.watch(commentsControllerProvider(widget.postId));
+    final comments = commentsState.comments.isNotEmpty
+        ? commentsState.comments
+        : (mockComments[widget.postId] ?? _defaultComments);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
@@ -160,7 +142,6 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                 ),
               ),
               Divider(color: theme.dividerColor, height: 1),
-
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
@@ -168,8 +149,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                     horizontal: 14,
                     vertical: 10,
                   ),
-                  itemCount:
-                      _comments.length + (widget.caption != null ? 1 : 0),
+                  itemCount: comments.length + (widget.caption != null ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (widget.caption != null && index == 0) {
                       return Padding(
@@ -222,10 +202,9 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                       );
                     }
 
-                    final commentIndex = widget.caption != null
-                        ? index - 1
-                        : index;
-                    final comment = _comments[commentIndex];
+                    final commentIndex =
+                        widget.caption != null ? index - 1 : index;
+                    final comment = comments[commentIndex];
 
                     return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -267,7 +246,7 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                                     ),
                                     const SizedBox(width: 16),
                                     Text(
-                                      'Répondre',
+                                      'Repondre',
                                       style: TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600,
@@ -279,38 +258,23 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                               ],
                             ),
                           ),
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              GestureDetector(
-                                onTap: () => _toggleLike(commentIndex),
-                                child: Icon(
-                                  comment.likedByMe
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  size: 16,
-                                  color: comment.likedByMe
-                                      ? AppColors.like
-                                      : secondary,
+                          if (comment.likeCount > 0)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 8),
+                              child: Text(
+                                '${comment.likeCount}',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: secondary,
                                 ),
                               ),
-                              if (comment.likeCount > 0)
-                                Text(
-                                  '${comment.likeCount}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: secondary,
-                                  ),
-                                ),
-                            ],
-                          ),
+                            ),
                         ],
                       ),
                     );
                   },
                 ),
               ),
-
               Container(
                 padding: EdgeInsets.fromLTRB(14, 8, 14, 8 + bottomInset),
                 decoration: BoxDecoration(
@@ -350,9 +314,8 @@ class _CommentsBottomSheetState extends State<CommentsBottomSheet> {
                     ListenableBuilder(
                       listenable: _commentController,
                       builder: (context, _) {
-                        final canSend = _commentController.text
-                            .trim()
-                            .isNotEmpty;
+                        final canSend =
+                            _commentController.text.trim().isNotEmpty;
                         return TextButton(
                           onPressed: canSend ? _addComment : null,
                           child: Text(
