@@ -1,36 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/data/mock_data.dart';
 import '../../core/models/post.dart';
 import '../../core/models/user.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/search/explore_grid.dart';
 import '../../core/widgets/search/search_bar_field.dart';
 import '../../core/widgets/search/user_search_tile.dart';
+import 'search_controller.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  ConsumerState<SearchScreen> createState() => _SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchScreenState extends ConsumerState<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _focusNode = FocusNode();
-
-  String _query = '';
-  List<User> _filteredUsers = [];
-  late List<User> _recentSearches;
-  late List<ProfilePost> _explorePosts;
 
   @override
   void initState() {
     super.initState();
-    _explorePosts = List.of(mockExplorePosts);
-    _recentSearches = [mockUsers[4], mockUsers[1], mockUsers[0]];
-
     _searchController.addListener(_onSearchChanged);
     _focusNode.addListener(() {
       setState(() {});
@@ -46,51 +39,33 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   void _onSearchChanged() {
-    final q = _searchController.text.trim();
-    if (q != _query) {
-      setState(() {
-        _query = q;
-        _filteredUsers = searchUsers(_query);
-      });
-    }
+    ref
+        .read(searchControllerProvider.notifier)
+        .onQueryChanged(_searchController.text);
   }
 
   void _onClearSearch() {
     _searchController.clear();
-    setState(() {
-      _query = '';
-      _filteredUsers = [];
-    });
+    ref.read(searchControllerProvider.notifier).clearSearch();
   }
 
   void _onCancelSearch() {
     _searchController.clear();
     _focusNode.unfocus();
-    setState(() {
-      _query = '';
-      _filteredUsers = [];
-    });
+    ref.read(searchControllerProvider.notifier).clearSearch();
   }
 
   void _onUserSelected(User user) {
-    if (!_recentSearches.any((u) => u.username == user.username)) {
-      setState(() {
-        _recentSearches.insert(0, user);
-      });
-    }
+    ref.read(searchControllerProvider.notifier).addRecent(user);
     context.push('/u/${user.username}');
   }
 
   void _onRemoveRecent(User user) {
-    setState(() {
-      _recentSearches.removeWhere((u) => u.username == user.username);
-    });
+    ref.read(searchControllerProvider.notifier).removeRecent(user);
   }
 
   void _onClearAllRecents() {
-    setState(() {
-      _recentSearches.clear();
-    });
+    ref.read(searchControllerProvider.notifier).clearRecents();
   }
 
   void _onPostSelected(ProfilePost post) {
@@ -98,19 +73,16 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _onRefresh() async {
-    await Future<void>.delayed(const Duration(milliseconds: 600));
-    if (mounted) {
-      setState(() {
-        _explorePosts = List.of(mockExplorePosts)..shuffle();
-      });
-    }
+    await ref.read(searchControllerProvider.notifier).loadExplore();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final isSearching = _focusNode.hasFocus || _query.isNotEmpty;
+    final searchState = ref.watch(searchControllerProvider);
+    final isSearching =
+        _focusNode.hasFocus || searchState.query.isNotEmpty;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -145,16 +117,22 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
             ),
-            Expanded(child: _buildContent(theme, isDark)),
+            Expanded(child: _buildContent(theme, isDark, searchState)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildContent(ThemeData theme, bool isDark) {
-    if (_query.isNotEmpty) {
-      if (_filteredUsers.isEmpty) {
+  Widget _buildContent(ThemeData theme, bool isDark, SearchState state) {
+    if (state.query.isNotEmpty) {
+      if (state.isSearching) {
+        return const Center(
+          child: CircularProgressIndicator(strokeWidth: 2.5),
+        );
+      }
+
+      if (state.searchResults.isEmpty) {
         return Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -168,7 +146,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const SizedBox(height: 12),
               Text(
-                'Aucun compte trouvé pour « $_query »',
+                'Aucun compte trouve pour "${state.query}"',
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
@@ -177,7 +155,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
               const SizedBox(height: 6),
               Text(
-                'Vérifiez l\'orthographe ou essayez un autre mot-clé.',
+                'Verifiez l\'orthographe ou essayez un autre mot-cle.',
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark
@@ -191,19 +169,19 @@ class _SearchScreenState extends State<SearchScreen> {
       }
 
       return ListView.builder(
-        itemCount: _filteredUsers.length,
+        itemCount: state.searchResults.length,
         itemBuilder: (context, index) {
-          final user = _filteredUsers[index];
+          final user = state.searchResults[index];
           return UserSearchTile(user: user, onTap: () => _onUserSelected(user));
         },
       );
     }
 
     if (_focusNode.hasFocus) {
-      if (_recentSearches.isEmpty) {
+      if (state.recentSearches.isEmpty) {
         return Center(
           child: Text(
-            'Aucune recherche récente',
+            'Aucune recherche recente',
             style: TextStyle(
               fontSize: 14,
               color: isDark
@@ -222,7 +200,7 @@ class _SearchScreenState extends State<SearchScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Récents',
+                  'Recents',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -243,7 +221,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
           ),
-          ..._recentSearches.map(
+          ...state.recentSearches.map(
             (user) => UserSearchTile(
               user: user,
               isRecent: true,
@@ -255,12 +233,18 @@ class _SearchScreenState extends State<SearchScreen> {
       );
     }
 
+    if (state.isLoadingExplore && state.explorePosts.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(strokeWidth: 2.5),
+      );
+    }
+
     return RefreshIndicator(
       onRefresh: _onRefresh,
       color: AppColors.primary,
       child: CustomScrollView(
         slivers: [
-          ExploreGrid(posts: _explorePosts, onPostTap: _onPostSelected),
+          ExploreGrid(posts: state.explorePosts, onPostTap: _onPostSelected),
         ],
       ),
     );

@@ -104,6 +104,12 @@ class Post {
     'savedByMe': savedByMe,
     'createdAt': createdAt.toIso8601String(),
   };
+
+  ProfilePost toProfilePost() => ProfilePost(
+    id: id,
+    thumbnailUrl: media.isNotEmpty ? media.first.url : '',
+    isMultiple: media.length > 1,
+  );
 }
 
 class ProfilePost {
