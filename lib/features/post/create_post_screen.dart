@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram_clone/core/widgets/post/post_settings_tile.dart';
-import '../../core/data/feed_provider.dart';
+import '../feed/feed_controller.dart';
 import '../../core/data/mock_data.dart';
 import '../../core/models/media.dart';
 import '../../core/models/post.dart';
@@ -97,7 +97,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       createdAt: now,
     );
 
-    ref.read(feedPostsProvider.notifier).addPost(newPost);
+    ref.read(feedControllerProvider.notifier).addPost(newPost);
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
