@@ -12,9 +12,14 @@ import '../comments/comments_bottom_sheet.dart';
 import '../common/avatar.dart';
 
 class PostCard extends StatefulWidget {
-  const PostCard({super.key, required this.post});
+  const PostCard({
+    super.key,
+    required this.post,
+    this.onLikeToggle,
+  });
 
   final Post post;
+  final VoidCallback? onLikeToggle;
 
   @override
   State<PostCard> createState() => _PostCardState();
@@ -24,6 +29,19 @@ class _PostCardState extends State<PostCard> {
   late bool _liked = widget.post.likedByMe;
   late bool _saved = widget.post.savedByMe;
   int _page = 0;
+
+  @override
+  void didUpdateWidget(PostCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.post.likedByMe != widget.post.likedByMe) {
+      _liked = widget.post.likedByMe;
+    }
+  }
+
+  void _handleLike() {
+    setState(() => _liked = !_liked);
+    widget.onLikeToggle?.call();
+  }
 
   int get _likeCount =>
       widget.post.likeCount +
@@ -60,7 +78,7 @@ class _PostCardState extends State<PostCard> {
           shareCount: post.shareCount,
           pageCount: post.media.length,
           page: _page,
-          onLike: () => setState(() => _liked = !_liked),
+          onLike: _handleLike,
           onSave: () => setState(() => _saved = !_saved),
           onComment: _openComments,
         ),

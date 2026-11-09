@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram_clone/core/widgets/post/post_settings_tile.dart';
-import '../../core/data/feed_provider.dart';
-import '../../core/data/mock_data.dart';
-import '../../core/models/media.dart';
-import '../../core/models/post.dart';
+import '../feed/feed_controller.dart';
+import '../auth/auth_controller.dart';
+import 'post_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/common/avatar.dart';
 import '../../core/widgets/post/post_image_preview.dart';
@@ -65,7 +64,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     final url = _urlController.text.trim();
     if (url.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -81,41 +80,48 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
       _isSubmitting = true;
     });
 
-    final now = DateTime.now();
-    final newId = 'post_${now.millisecondsSinceEpoch}';
-
-    final newPost = Post(
-      id: newId,
-      author: me,
-      media: [Media(url: url, height: 1080, width: 1080)],
-      caption: _captionController.text.trim(),
-      likeCount: 0,
-      commentCount: 0,
-      repostCount: 0,
-      shareCount: 0,
-      likedBy: const [],
-      createdAt: now,
+    final caption = _captionController.text.trim();
+    final post = await ref.read(postControllerProvider.notifier).createPost(
+      caption: caption,
+      mediaUrls: [url],
     );
 
-    ref.read(feedPostsProvider.notifier).addPost(newPost);
+    if (!mounted) return;
+    setState(() {
+      _isSubmitting = false;
+    });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Publication partagee avec succes !'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+    if (post != null) {
+      ref.read(feedControllerProvider.notifier).addPost(post);
 
-    if (context.canPop()) {
-      context.pop();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Publication partagee avec succes !'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      if (context.canPop()) {
+        context.pop();
+      } else {
+        context.go('/');
+      }
     } else {
-      context.go('/');
+      final error = ref.read(postControllerProvider).error ??
+          'Impossible de creer la publication';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(error),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final currentUser = ref.watch(authControllerProvider).user;
     final isDark = theme.brightness == Brightness.dark;
     final secondaryColor = isDark
         ? AppColors.darkSecondary
@@ -261,14 +267,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Avatar(url: me.avatarUrl, size: 40),
+                Avatar(url: currentUser?.avatarUrl, size: 40),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        me.username,
+                        currentUser?.username ?? 'moi',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,

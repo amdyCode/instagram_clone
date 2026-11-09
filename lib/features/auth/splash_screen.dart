@@ -1,25 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'auth_controller.dart';
 import '../../core/widgets/common/instagram_logo.dart';
 import '../../core/widgets/common/meta_logo.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   static const delay = Duration(milliseconds: 1200);
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future<void>.delayed(SplashScreen.delay, () {
-      if (mounted) context.go('/auth/login');
-    });
+    _bootstrap();
+  }
+
+  Future<void> _bootstrap() async {
+    await Future<void>.delayed(SplashScreen.delay);
+    if (!mounted) return;
+
+    await ref.read(authControllerProvider.notifier).checkAuth();
+    if (!mounted) return;
+
+    if (ref.read(authControllerProvider).isAuthenticated) {
+      context.go('/');
+    } else {
+      context.go('/auth/login');
+    }
   }
 
   @override

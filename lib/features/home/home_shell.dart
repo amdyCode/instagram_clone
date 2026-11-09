@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/data/mock_data.dart';
 import '../../core/widgets/common/avatar.dart';
+import '../auth/auth_controller.dart';
 
-class HomeShell extends StatelessWidget {
+class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.shell});
 
   final StatefulNavigationShell shell;
@@ -14,10 +15,11 @@ class HomeShell extends StatelessWidget {
       shell.goBranch(index, initialLocation: index == shell.currentIndex);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final color = theme.colorScheme.onSurface;
     final i = shell.currentIndex;
+    final user = ref.watch(authControllerProvider).user;
 
     final items = <(String, Widget)>[
       (
@@ -46,7 +48,7 @@ class HomeShell extends StatelessWidget {
               width: 1.5,
             ),
           ),
-          child: Avatar(url: me.avatarUrl, size: 26),
+          child: Avatar(url: user?.avatarUrl, size: 26),
         ),
       ),
     ];

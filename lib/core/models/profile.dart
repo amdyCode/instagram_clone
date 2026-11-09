@@ -60,4 +60,25 @@ class Profile {
       posts: posts ?? this.posts,
     );
   }
+
+  factory Profile.fromUser(
+    User user, {
+    List<ProfilePost>? posts,
+    List<Highlight>? highlights,
+  }) {
+    return Profile(
+      username: user.username,
+      fullName: user.fullName ?? user.username,
+      avatarUrl: user.avatarUrl,
+      bio: user.bio ?? '',
+      link: user.link,
+      postCount: user.postCount,
+      followerCount: user.followerCount,
+      followingCount: user.followingCount,
+      isMe: user.isMe,
+      isFollowing: user.isFollowing,
+      highlights: highlights ?? const [],
+      posts: posts ?? const [],
+    );
+  }
 }
