@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/data/mock_data.dart';
 import '../../core/models/post.dart';
 import '../../core/models/user.dart';
 import 'search_repository.dart';
@@ -50,11 +49,7 @@ class SearchController extends Notifier<SearchState> {
   @override
   SearchState build() {
     Future.microtask(() => loadExplore());
-    return SearchState(
-      explorePosts: mockExplorePosts,
-      recentSearches: [mockUsers[4], mockUsers[1], mockUsers[0]],
-      isLoadingExplore: true,
-    );
+    return const SearchState(isLoadingExplore: true);
   }
 
   SearchRepository get _repository => ref.read(searchRepositoryProvider);
@@ -65,14 +60,13 @@ class SearchController extends Notifier<SearchState> {
       final posts = await _repository.getExplorePosts();
       final profilePosts = posts.map((p) => p.toProfilePost()).toList();
       state = state.copyWith(
-        explorePosts: profilePosts.isNotEmpty ? profilePosts : mockExplorePosts,
+        explorePosts: profilePosts,
         isLoadingExplore: false,
       );
     } catch (_) {
       state = state.copyWith(
-        explorePosts:
-            state.explorePosts.isNotEmpty ? state.explorePosts : mockExplorePosts,
         isLoadingExplore: false,
+        error: 'Impossible de charger la page explorer',
       );
     }
   }
@@ -95,8 +89,9 @@ class SearchController extends Notifier<SearchState> {
     } catch (_) {
       if (state.query == cleanQuery) {
         state = state.copyWith(
-          searchResults: searchUsers(cleanQuery),
+          searchResults: [],
           isSearching: false,
+          error: 'Erreur lors de la recherche',
         );
       }
     }
@@ -109,9 +104,10 @@ class SearchController extends Notifier<SearchState> {
     state = state.copyWith(recentSearches: list);
   }
 
-  void removeRecent(User user) {
+  void removeRecent(dynamic target) {
+    final username = target is User ? target.username : target.toString();
     final list = List<User>.from(state.recentSearches);
-    list.removeWhere((u) => u.username == user.username);
+    list.removeWhere((u) => u.username == username);
     state = state.copyWith(recentSearches: list);
   }
 

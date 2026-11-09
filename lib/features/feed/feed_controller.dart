@@ -1,6 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/data/mock_data.dart';
 import '../../core/models/post.dart';
 import 'feed_repository.dart';
 
@@ -53,13 +52,12 @@ class FeedController extends Notifier<FeedState> {
     try {
       final posts = await _repository.getFeed(limit: pageSize, offset: 0);
       state = state.copyWith(
-        posts: posts.isNotEmpty ? posts : mockPosts,
+        posts: posts,
         isLoading: false,
         hasMore: posts.length >= pageSize,
       );
     } catch (_) {
       state = state.copyWith(
-        posts: state.posts.isNotEmpty ? state.posts : mockPosts,
         isLoading: false,
         error: 'Impossible de recuperer le feed depuis le serveur',
       );
@@ -70,12 +68,11 @@ class FeedController extends Notifier<FeedState> {
     try {
       final posts = await _repository.getFeed(limit: pageSize, offset: 0);
       state = state.copyWith(
-        posts: posts.isNotEmpty ? posts : mockPosts,
+        posts: posts,
         hasMore: posts.length >= pageSize,
         clearError: true,
       );
     } catch (_) {
-      // Conserve les posts existants en cas d'erreur de refresh
     }
   }
 

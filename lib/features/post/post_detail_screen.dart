@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/data/mock_data.dart';
 import '../../core/widgets/feed/post_card.dart';
 import '../feed/feed_controller.dart';
 import 'post_controller.dart';
@@ -24,8 +23,12 @@ class PostDetailScreen extends ConsumerWidget {
         ),
       ),
       body: postAsync.when(
-        data: (apiPost) {
-          final post = apiPost ?? getPostById(postId);
+        data: (post) {
+          if (post == null) {
+            return const Center(
+              child: Text('Publication introuvable'),
+            );
+          }
           return SingleChildScrollView(
             child: PostCard(
               key: ValueKey(post.id),
@@ -39,18 +42,9 @@ class PostDetailScreen extends ConsumerWidget {
         loading: () => const Center(
           child: CircularProgressIndicator(strokeWidth: 2.5),
         ),
-        error: (_, _) {
-          final post = getPostById(postId);
-          return SingleChildScrollView(
-            child: PostCard(
-              key: ValueKey(post.id),
-              post: post,
-              onLikeToggle: () => ref
-                  .read(feedControllerProvider.notifier)
-                  .toggleLike(post.id),
-            ),
-          );
-        },
+        error: (err, _) => Center(
+          child: Text('Erreur: $err'),
+        ),
       ),
     );
   }

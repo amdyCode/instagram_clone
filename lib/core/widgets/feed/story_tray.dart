@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram_clone/core/models/story.dart';
 
-import '../../data/mock_data.dart';
+import '../../../features/auth/auth_controller.dart';
 import '../common/avatar.dart';
 
 class StoryTray extends StatelessWidget {
-  const StoryTray({super.key, required this.stories});
+  const StoryTray({super.key, this.stories = const []});
 
   final List<Story> stories;
 
@@ -61,12 +62,13 @@ class _StoryItem extends StatelessWidget {
   }
 }
 
-class _YourStory extends StatelessWidget {
+class _YourStory extends ConsumerWidget {
   const _YourStory();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final user = ref.watch(authControllerProvider).user;
     return _Labeled(
       label: 'Votre story',
       dimmed: true,
@@ -77,7 +79,7 @@ class _YourStory extends StatelessWidget {
             StoryRing(
               size: StoryTray._ringSize,
               state: StoryRingState.none,
-              child: Avatar(url: me.avatarUrl, size: 100),
+              child: Avatar(url: user?.avatarUrl, size: 100),
             ),
             Positioned(
               right: 2,

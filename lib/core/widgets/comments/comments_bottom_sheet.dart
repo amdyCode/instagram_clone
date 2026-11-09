@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../features/auth/auth_controller.dart';
 import '../../../features/post/post_controller.dart';
-import '../../data/mock_data.dart';
-import '../../models/comment.dart';
 import '../../models/user.dart';
 import '../../theme/app_colors.dart';
 import '../../utils/formatters.dart';
@@ -52,23 +51,6 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
   final _commentController = TextEditingController();
   final _scrollController = ScrollController();
 
-  static final List<Comment> _defaultComments = [
-    Comment(
-      id: 'c_default_1',
-      author: mockUsers[0],
-      text: 'Superbe photo ! J\'adore les couleurs',
-      createdAt: DateTime.now().subtract(const Duration(hours: 3)),
-      likeCount: 4,
-    ),
-    Comment(
-      id: 'c_default_2',
-      author: mockUsers[1],
-      text: 'Magnifique cadrage',
-      createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-      likeCount: 1,
-    ),
-  ];
-
   @override
   void dispose() {
     _commentController.dispose();
@@ -107,9 +89,8 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     final commentsState = ref.watch(commentsControllerProvider(widget.postId));
-    final comments = commentsState.comments.isNotEmpty
-        ? commentsState.comments
-        : (mockComments[widget.postId] ?? _defaultComments);
+    final comments = commentsState.comments;
+    final currentUser = ref.watch(authControllerProvider).user;
 
     return DraggableScrollableSheet(
       initialChildSize: 0.75,
@@ -143,13 +124,25 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
               ),
               Divider(color: theme.dividerColor, height: 1),
               Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  itemCount: comments.length + (widget.caption != null ? 1 : 0),
+                child: commentsState.isLoading && comments.isEmpty
+                    ? const Center(
+                        child: CircularProgressIndicator(strokeWidth: 2.5),
+                      )
+                    : (comments.isEmpty && widget.caption == null)
+                        ? Center(
+                            child: Text(
+                              'Aucun commentaire pour le moment.',
+                              style: TextStyle(color: secondary, fontSize: 14),
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: scrollController,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 14,
+                              vertical: 10,
+                            ),
+                            itemCount:
+                                comments.length + (widget.caption != null ? 1 : 0),
                   itemBuilder: (context, index) {
                     if (widget.caption != null && index == 0) {
                       return Padding(
@@ -285,7 +278,7 @@ class _CommentsBottomSheetState extends ConsumerState<CommentsBottomSheet> {
                 ),
                 child: Row(
                   children: [
-                    Avatar(url: me.avatarUrl, size: 36),
+                    Avatar(url: currentUser?.avatarUrl, size: 36),
                     const SizedBox(width: 12),
                     Expanded(
                       child: TextField(

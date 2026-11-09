@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instagram_clone/core/widgets/post/post_settings_tile.dart';
 import '../feed/feed_controller.dart';
+import '../auth/auth_controller.dart';
 import 'post_controller.dart';
-import '../../core/data/mock_data.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/common/avatar.dart';
 import '../../core/widgets/post/post_image_preview.dart';
@@ -121,6 +121,7 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final currentUser = ref.watch(authControllerProvider).user;
     final isDark = theme.brightness == Brightness.dark;
     final secondaryColor = isDark
         ? AppColors.darkSecondary
@@ -266,14 +267,14 @@ class _CreatePostScreenState extends ConsumerState<CreatePostScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Avatar(url: me.avatarUrl, size: 40),
+                Avatar(url: currentUser?.avatarUrl, size: 40),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        me.username,
+                        currentUser?.username ?? 'moi',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,

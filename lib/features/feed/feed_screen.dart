@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/data/mock_data.dart';
 import '../../core/widgets/common/instagram_logo.dart';
 import '../../core/widgets/feed/post_card.dart';
 import '../../core/widgets/feed/story_tray.dart';
@@ -52,13 +51,20 @@ class FeedScreen extends ConsumerWidget {
                     const SizedBox(width: 4),
                   ],
                 ),
-                SliverToBoxAdapter(child: StoryTray(stories: mockStories)),
+                SliverToBoxAdapter(child: StoryTray(stories: const [])),
                 const SliverToBoxAdapter(child: SizedBox(height: 4)),
                 if (feedState.isLoading && posts.isEmpty)
                   const SliverFillRemaining(
                     hasScrollBody: false,
                     child: Center(
                       child: CircularProgressIndicator(strokeWidth: 2.5),
+                    ),
+                  )
+                else if (posts.isEmpty)
+                  const SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Center(
+                      child: Text('Aucune publication pour le moment'),
                     ),
                   )
                 else

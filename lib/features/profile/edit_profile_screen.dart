@@ -1,36 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/profile.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/common/avatar.dart';
+import '../auth/auth_controller.dart';
+import 'profile_controller.dart';
 
-class EditProfileScreen extends StatefulWidget {
-  const EditProfileScreen({super.key, required this.profile});
+class EditProfileScreen extends ConsumerStatefulWidget {
+  const EditProfileScreen({super.key, this.profile});
 
-  final Profile profile;
+  final Profile? profile;
 
   @override
-  State<EditProfileScreen> createState() => _EditProfileScreenState();
+  ConsumerState<EditProfileScreen> createState() => _EditProfileScreenState();
 }
 
-class _EditProfileScreenState extends State<EditProfileScreen> {
+class _EditProfileScreenState extends ConsumerState<EditProfileScreen> {
   late final TextEditingController _nameController;
   late final TextEditingController _bioController;
   late final TextEditingController _avatarController;
   late final TextEditingController _linkController;
 
   late String _currentAvatarUrl;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.profile.fullName);
-    _bioController = TextEditingController(text: widget.profile.bio);
-    _avatarController = TextEditingController(
-      text: widget.profile.avatarUrl ?? '',
-    );
-    _linkController = TextEditingController(text: widget.profile.link ?? '');
+    final user = ref.read(authControllerProvider).user;
+    final p = widget.profile ??
+        ref.read(myProfileControllerProvider).profile ??
+        (user != null
+            ? Profile.fromUser(user)
+            : const Profile(
+                username: '',
+                fullName: '',
+                avatarUrl: null,
+                bio: '',
+                postCount: 0,
+                followerCount: 0,
+                followingCount: 0,
+                isMe: true,
+                isFollowing: false,
+              ));
 
-    _currentAvatarUrl = widget.profile.avatarUrl ?? '';
+    _nameController = TextEditingController(text: p.fullName);
+    _bioController = TextEditingController(text: p.bio);
+    _avatarController = TextEditingController(
+      text: p.avatarUrl ?? '',
+    );
+    _linkController = TextEditingController(text: p.link ?? '');
+
+    _currentAvatarUrl = p.avatarUrl ?? '';
 
     _avatarController.addListener(() {
       final text = _avatarController.text.trim();
@@ -51,17 +72,72 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  void _save() {
-    final updated = widget.profile.copyWith(
-      fullName: _nameController.text.trim(),
-      bio: _bioController.text.trim(),
-      avatarUrl: _currentAvatarUrl.isNotEmpty ? _currentAvatarUrl : null,
-      link: _linkController.text.trim().isNotEmpty
-          ? _linkController.text.trim()
-          : null,
-    );
+  Future<void> _save() async {
+    if (_isSaving) return;
 
-    Navigator.of(context).pop(updated);
+    setState(() {
+      _isSaving = true;
+    });
+
+    final fullName = _nameController.text.trim();
+    final bio = _bioController.text.trim();
+    final avatarUrl =
+        _currentAvatarUrl.isNotEmpty ? _currentAvatarUrl : null;
+    final link = _linkController.text.trim().isNotEmpty
+        ? _linkController.text.trim()
+        : null;
+
+    final success = await ref
+        .read(myProfileControllerProvider.notifier)
+        .updateProfile(
+          fullName: fullName,
+          bio: bio,
+          avatarUrl: avatarUrl,
+          link: link,
+        );
+
+    if (!mounted) return;
+    setState(() {
+      _isSaving = false;
+    });
+
+    if (success) {
+      final user = ref.read(authControllerProvider).user;
+      final base =
+          widget.profile ?? ref.read(myProfileControllerProvider).profile;
+      final updated = base?.copyWith(
+            fullName: fullName,
+            bio: bio,
+            avatarUrl: avatarUrl,
+            link: link,
+          ) ??
+          (user != null
+              ? Profile.fromUser(user).copyWith(
+                  fullName: fullName,
+                  bio: bio,
+                  avatarUrl: avatarUrl,
+                  link: link,
+                )
+              : Profile(
+                  username: '',
+                  fullName: fullName,
+                  bio: bio,
+                  avatarUrl: avatarUrl,
+                  link: link,
+                  postCount: 0,
+                  followerCount: 0,
+                  followingCount: 0,
+                  isMe: true,
+                  isFollowing: false,
+                ));
+      Navigator.of(context).pop(updated);
+    } else {
+      final error = ref.read(myProfileControllerProvider).error ??
+          'Erreur lors de la mise a jour';
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), behavior: SnackBarBehavior.floating),
+      );
+    }
   }
 
   @override
@@ -85,8 +161,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         actions: [
           IconButton(
             tooltip: 'Enregistrer',
-            icon: const Icon(Icons.check, color: AppColors.primary, size: 28),
-            onPressed: _save,
+            icon: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.check, color: AppColors.primary, size: 28),
+            onPressed: _isSaving ? null : _save,
           ),
         ],
       ),
@@ -143,7 +225,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           const SizedBox(height: 16),
           Divider(color: dividerColor, height: 1),
           const SizedBox(height: 16),
-
           _FormFieldRow(
             label: 'Nom',
             controller: _nameController,
@@ -152,7 +233,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             onSurface: onSurface,
           ),
           const SizedBox(height: 14),
-
           _FormFieldRow(
             label: 'URL Avatar',
             controller: _avatarController,
@@ -160,20 +240,18 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             keyboardType: TextInputType.url,
             isDark: isDark,
             onSurface: onSurface,
-            helperText: 'Aperçu instantané au-dessus',
+            helperText: 'Apercu instantane au-dessus',
           ),
           const SizedBox(height: 14),
-
           _FormFieldRow(
             label: 'Bio',
             controller: _bioController,
-            hintText: 'Présentez-vous en quelques mots...',
+            hintText: 'Presentez-vous en quelques mots...',
             maxLines: 3,
             isDark: isDark,
             onSurface: onSurface,
           ),
           const SizedBox(height: 14),
-
           _FormFieldRow(
             label: 'Liens',
             controller: _linkController,
@@ -183,10 +261,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             onSurface: onSurface,
           ),
           const SizedBox(height: 24),
-
           Divider(color: dividerColor, height: 1),
           const SizedBox(height: 16),
-
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primary,
@@ -197,11 +273,23 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               elevation: 0,
             ),
-            onPressed: _save,
-            child: const Text(
-              'Enregistrer les modifications',
-              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-            ),
+            onPressed: _isSaving ? null : _save,
+            child: _isSaving
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text(
+                    'Enregistrer les modifications',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
           ),
         ],
       ),
@@ -258,16 +346,16 @@ class _FormFieldRow extends StatelessWidget {
             ),
             hintStyle: TextStyle(
               fontSize: 14,
-              color: isDark ? const Color(0xFF555555) : const Color(0xFFB0B0B0),
+              color:
+                  isDark ? const Color(0xFF555555) : const Color(0xFFB0B0B0),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 14,
               vertical: 12,
             ),
             filled: true,
-            fillColor: isDark
-                ? const Color(0xFF1A1A1A)
-                : const Color(0xFFF9F9F9),
+            fillColor:
+                isDark ? const Color(0xFF1A1A1A) : const Color(0xFFF9F9F9),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide: BorderSide(

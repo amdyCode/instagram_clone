@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/data/mock_data.dart';
+import '../models/profile.dart';
 import '../../features/auth/login_screen.dart';
 import '../../features/auth/register_screen.dart';
 import '../../features/auth/splash_screen.dart';
@@ -39,7 +39,8 @@ GoRouter buildRouter({String initialLocation = '/splash'}) => GoRouter(
     ),
     GoRoute(
       path: '/edit-profile',
-      builder: (_, _) => EditProfileScreen(profile: sampleMyProfile),
+      builder: (_, state) =>
+          EditProfileScreen(profile: state.extra as Profile?),
     ),
     GoRoute(path: '/create-post', builder: (_, _) => const CreatePostScreen()),
     GoRoute(

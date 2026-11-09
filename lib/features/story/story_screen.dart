@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/data/mock_data.dart';
 import '../../core/models/story.dart';
 import '../../core/widgets/story/story_bottom_bar.dart';
 import '../../core/widgets/story/story_header.dart';
@@ -38,8 +37,10 @@ class _StoryScreenState extends State<StoryScreen>
   @override
   void initState() {
     super.initState();
-    _stories = widget.stories ?? mockStories;
-    _currentUserIndex = widget.initialIndex.clamp(0, _stories.length - 1);
+    _stories = widget.stories ?? const [];
+    _currentUserIndex = _stories.isEmpty
+        ? 0
+        : widget.initialIndex.clamp(0, _stories.length - 1);
     _pageController = PageController(initialPage: _currentUserIndex);
 
     _animController = AnimationController(
@@ -53,7 +54,9 @@ class _StoryScreenState extends State<StoryScreen>
       }
     });
 
-    _animController.forward();
+    if (_stories.isNotEmpty) {
+      _animController.forward();
+    }
   }
 
   @override
@@ -129,6 +132,26 @@ class _StoryScreenState extends State<StoryScreen>
 
   @override
   Widget build(BuildContext context) {
+    if (_stories.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          leading: IconButton(
+            icon: const Icon(Icons.close, color: Colors.white),
+            onPressed: () => context.pop(),
+          ),
+        ),
+        body: const Center(
+          child: Text(
+            'Aucune story disponible',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: AnnotatedRegion<SystemUiOverlayStyle>(
